@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the GitHub repository
+                git branch: 'master', url: 'https://github.com/EDARAAVINASH/team.git'
+            }
+        }
+        stage('Compile') {
+            steps {
+                script {
+                    // Define paths
+                    def srcDir = 'src'
+                    def outputDir = 'out'
+                    
+                    // Ensure the output directory exists
+                    bat """
+                    if not exist ${outputDir} (
+                        mkdir ${outputDir}
+                    )
+                    """
+                    
+                    // Compile the Java files
+                    bat "javac -d ${outputDir} ${srcDir}/com/lbrce/Test.java"
+                }
+            }
+        }
+        stage('Execute') {
+            steps {
+                script {
+                    // Define the class to execute
+                    def classFile = 'com.lbrce.Test'
+                    
+                    // Execute the compiled Java class
+                    bat "java -cp out ${classFile}"
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
+        }
+    }
+}
